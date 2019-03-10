@@ -11,13 +11,14 @@ import java.net.Socket;
 import java.util.ArrayList;
 
 public class SocketService {
+	
 	private ServerSocket serverSocket = null;	
 	private Thread serverThread = null;
 	private boolean running = false;
 	static int count=0;
 	private ArrayList<Client> clients = new ArrayList<>();
 	private ArrayList<Annonce> annonces = new ArrayList<>();
-	
+
 	public void serve(int port) throws IOException {
 		serverSocket = new ServerSocket(port);
 		serverThread= makeServerThread();
@@ -43,14 +44,14 @@ public class SocketService {
 	private Thread makeServerThread() {
 		return new Thread (
 				new Runnable() {
-					
+
 					@Override
 					public void run() {
 						running = true;
 						while(running) {
 							acceptAndServerConnection();
 						}
-						
+
 					}
 				});
 	}
@@ -63,19 +64,19 @@ public class SocketService {
 			count++;
 			//new Thread(new ServiceRunnable(s)).start();
 			new Thread(new ServiceListening(s)).start();
-			
+
 		} catch (IOException e) {
 			System.err.println("Could not accept");
 			e.printStackTrace();
 		}
-		
+
 	}
-	
+
 	/*
 	 * thread running and verify if there is new clients
 	 * if that the case it notifies the client 
 	 */
-	
+
 	class ServiceListening implements Runnable {
 		private Socket itsSocket;
 		private boolean connected=false;
@@ -88,14 +89,14 @@ public class SocketService {
 		}
 		public void run()
 		{
-			 try {
+			try {
 				while(log)
 				{
 					msg=readReq(itsSocket);
-					
+
 					System.out.println(msg);
 					requete = msg.split(" ");
-					
+
 					username =verifReq(requete,itsSocket);
 					System.out.println(username);
 					if(!username.equals("not connected"))
@@ -106,31 +107,31 @@ public class SocketService {
 				}
 				while(connected)
 				{
-					 msg=readReq(itsSocket);
+					msg=readReq(itsSocket);
 					System.out.println(msg);
 					requete = msg.split(" ");
 					connected = afterLog(requete, itsSocket, username);
 					if(!connected)
 						System.out.println("godd bye");
 				}
-								
+
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
-		
+
 	}
 	//after a successful login
 	private boolean afterLog(String []req,Socket s,String username) throws IOException
 	{
 		String requete;
 		PrintStream ps=getPrintStream(s);
-		 if(req[0].equals("DECO+++")) {
-			 	disconnected(username);
-				ps.print("GBYE+++");
-				s.close();
-				return false;
+		if(req[0].equals("DECO+++")) {
+			disconnected(username);
+			ps.print("GBYE+++");
+			s.close();
+			return false;
 		}
 		else if(req[0].equals("POST")) {
 			return postAnnonce(req, s, username);
@@ -139,21 +140,21 @@ public class SocketService {
 			return suppAnnonce(req, s, username);
 		}
 		else if (req[0].equals("LIST+++")) {
-				ps.print("NBAN "+annonces.size()+"+++");
-				for(int i=0;i<annonces.size();i++)
-				{
-					requete = "ANNO "+annonces.get(i).getId()+" "+annonces.get(i).getCode()+" "+annonces.get(i).getPrix()+" "+annonces.get(i).getDesc()+"+++";
-					System.out.println(requete);
-					ps.print(requete);
-				}
+			ps.print("NBAN "+annonces.size()+"+++");
+			for(int i=0;i<annonces.size();i++)
+			{
+				requete = "ANNO "+annonces.get(i).getId()+" "+annonces.get(i).getCode()+
+						" "+annonces.get(i).getPrix()+" "+annonces.get(i).getDesc()+"+++";
+				System.out.println(requete);
+				ps.print(requete);
+			}
 			return true;
 		}
 		else if (req[0].equals("INTR")) 
 		{
 			String annoID = req[1].substring(0, req[1].length()-3);
 			requete=contactUser(Integer.parseInt(annoID));
-			if(requete.equals(""))
-			{
+			if(requete.equals("")){
 				ps.print("KOKO 5+++");
 			}
 			else if(requete.equals("off")){
@@ -166,6 +167,7 @@ public class SocketService {
 		}
 		return true;
 	}
+	
 	//before login ; regi & login
 	public String verifReq(String[] req,Socket s) throws IOException
 	{
@@ -184,13 +186,13 @@ public class SocketService {
 			return "not connected";
 		}
 	}
-	
+
 	private void registration(String [] msg,Socket s) throws IOException
 	{	
 		PrintStream ps=getPrintStream(s);
 		String username=msg[1];
 		String pwd = msg[2].substring(0, msg[2].length()-3);
-				
+
 		if(isExistId(username))
 		{
 			System.out.println("koko 0");
@@ -203,7 +205,7 @@ public class SocketService {
 			ps.print("OKOK+++");
 		}	
 	}
-	
+
 	private String login(String[] msg,Socket s) throws IOException
 	{
 		boolean verif;
@@ -227,14 +229,14 @@ public class SocketService {
 				ps.print("KOKO 2+++");
 				return "not connected";
 			}
-			
+
 		}
 		else {
 			ps.print("KOKO 3+++");
 			return "not connected";
 		}		
 	}
-	
+
 	private boolean postAnnonce(String[] msg,Socket s, String username) throws IOException
 	{
 		int code;		
@@ -273,20 +275,20 @@ public class SocketService {
 		String id = msg[1].substring(0, msg[1].length()-3);
 		PrintStream ps=getPrintStream(s);
 		int k = deleteAnnonce(Integer.parseInt(id),username);
-					
+
 		if(k==1)
 		{
 			ps.print("OKOK+++");
 		}
 		else if(k==2){
-				ps.print("KOKO 6+++");
+			ps.print("KOKO 6+++");
 		}
 		else if(k==3) {
 			ps.print("KOKO 5+++");
 		}
 		return true;
 	}
-	
+
 	public boolean isExistId(String id) {
 		for(int i=0;i<clients.size();i++)
 		{
@@ -295,7 +297,7 @@ public class SocketService {
 		}
 		return false;
 	}
-	
+
 	public int deleteAnnonce(int id,String username)
 	{
 		for(int i=0;i<annonces.size();i++)
@@ -315,7 +317,9 @@ public class SocketService {
 		}
 		return 3;
 	}
-	
+	/*
+	 * contact other user trying to buy product
+	 */
 	public String contactUser(int id)
 	{
 		Client c;
@@ -336,7 +340,10 @@ public class SocketService {
 		}
 		return response;
 	}
-	
+
+	/*
+	 * search users
+	 */
 	public Client searchById(String username)
 	{
 		for(int i=0;i<clients.size();i++)
@@ -346,7 +353,10 @@ public class SocketService {
 		}
 		return null;
 	}
-	
+
+	/*
+	 * login
+	 */
 	public void connected(String username,int port)
 	{
 		for(int i=0;i<clients.size();i++)
@@ -356,10 +366,12 @@ public class SocketService {
 				clients.get(i).setConnected(true);
 				clients.get(i).setPort(port);
 			}
-				
+
 		}
 	}
-	
+	/*
+	 * logout
+	 */
 	public void disconnected(String username)
 	{
 		for(int i=0;i<clients.size();i++)
@@ -368,9 +380,12 @@ public class SocketService {
 			{
 				clients.get(i).setConnected(false);
 			}
-				
+
 		}
 	}
+	/*
+	 * verification of price is in a good form 
+	 */
 	public boolean isPrice (String price) {
 		int count =0;
 		boolean verif=false;
@@ -400,16 +415,19 @@ public class SocketService {
 			else if (count>=2) {
 				verif=false;
 			}
-			
+
 		}
 		return verif;
 	}
+	/*
+	 * get thhe price from the message 
+	 */
 	public int StringtoInt(StringBuilder msg)
 	{
 		int id=0;
 		int l=msg.length()-1;
 		int k=(int) Math.pow(10.0, l);
-		
+
 		for(int i=0;i<msg.length();i++)
 		{
 			id+=Character.getNumericValue(msg.charAt(i))*k;
@@ -418,8 +436,12 @@ public class SocketService {
 		}
 		return id;
 	}
+	
+	/*
+	 * login clients 
+	 */
 	public boolean userLogin(String id, String mdp,String port,String ip) {
-		
+
 		for(int i=0;i<clients.size();i++) {
 			if(clients.get(i).getUsername().equals(id) && clients.get(i).getPassword().equals(mdp)) {
 				clients.get(i).setPort(Integer.parseInt(port.trim()));
@@ -430,6 +452,9 @@ public class SocketService {
 		}
 		return false;
 	}
+	/*
+	 * update the ip and port number of users
+	 */
 	private void updateIP(String id,String mdp,int port) {
 		for(int i=0;i<clients.size();i++) {
 			if(clients.get(i).getUsername().equals(id) && clients.get(i).getPassword().equals(mdp)) {
@@ -437,7 +462,9 @@ public class SocketService {
 			}
 		}
 	}
-	
+	/*
+	 * read messages
+	 */
 	private String readReq(Socket s) throws IOException
 	{
 		String response="";
@@ -454,5 +481,5 @@ public class SocketService {
 
 		return response;
 	}
-	
+
 }

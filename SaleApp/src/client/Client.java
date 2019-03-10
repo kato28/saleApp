@@ -8,11 +8,11 @@ import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
 public class Client {
-	
+
 	public  final static String IP="localhost";
 	public final static int PORT=2345;
 	public final static int localPort=9070;
-	
+
 	public static void main(String [] args) throws UnknownHostException, IOException
 	{
 		String reader;
@@ -89,15 +89,15 @@ public class Client {
 							System.out.println("write a brief description");
 							reader = scanner.nextLine();
 							response = cs.postAnnonce(code, price, reader);
-							
+
 							System.out.println("the annonce id :"+response);
 							System.out.println();
 							//server.addAnnonce(Integer.parseInt(response));
-								
+
 						}
 						else
 							System.out.println("price incorrect");
-						
+
 					}
 					else
 						System.out.println("code incorrect");
@@ -108,7 +108,7 @@ public class Client {
 					reader= scanner.nextLine();
 					response = cs.suppAnoonce(reader);
 					System.out.println(response);
-					
+
 				}
 				else if(reader.equals("3"))
 				{
@@ -118,9 +118,9 @@ public class Client {
 				{
 					System.out.print("enter the annonce id : ");
 					reader=scanner.nextLine();
-					
+
 					response=cs.information(reader);
-					
+
 					System.out.println(response);
 					String req[] = response.split(" ");
 					int id = Integer.parseInt(reader);
@@ -134,7 +134,7 @@ public class Client {
 								SSLSocketFactory.getDefault(); 
 						SSLSocket s = (SSLSocket)socketFactory.createSocket(ipAnn, portAnn);
 						s.setEnabledCipherSuites(socketFactory.getSupportedCipherSuites());
-						
+
 						//Socket s = new Socket(ipAnn,portAnn);
 						response = cs.dispo(id,s);
 						System.out.println(response);
@@ -165,7 +165,7 @@ public class Client {
 						}	
 					}
 					System.out.println();
-				
+
 				}
 				else if(reader.equals("5"))
 				{
@@ -182,6 +182,6 @@ public class Client {
 				}
 			}
 		}
-		
+
 	}
 }
